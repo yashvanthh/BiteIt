@@ -24,6 +24,8 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      "jsx-a11y/anchor-is-valid": "off",
+      
     },
   },
 ])
