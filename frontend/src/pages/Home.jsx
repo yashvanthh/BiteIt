@@ -1,5 +1,7 @@
 import React from 'react';
 import Footer from '../components/Footer'; 
+import AboutUs from './About';
+import Contact from './Contact';
 
 const Home = () => {
   return (
@@ -20,7 +22,7 @@ const Home = () => {
         <div className="relative z-10 flex items-center justify-center min-h-screen px-6">
           <div className="max-w-3xl text-center text-white">
             <h1 className="text-5xl font-extrabold mb-4">
-              Welcome to <span className="text-orange-500">BiteIt</span>
+              Welcome to <span className="text-orange-500">Bitelt</span>
             </h1>
             <p className="text-lg sm:text-xl">
               Explore our delicious menu crafted with fresh ingredients and passion.
@@ -29,6 +31,8 @@ const Home = () => {
           </div>
         </div>
       </section>
+      <AboutUs/>
+      <Contact/>
       <Footer />
     </>
   );

@@ -33,11 +33,10 @@ const Login = () => {
       return;
     }
 
-    // ✅ Save login state
+    // ✅ Save login state properly
     localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('loggedInUser', JSON.stringify(user));
-
-    login(); // ✅ Update global auth context
+    localStorage.setItem('loggedInUser', user.email); // ONLY store email
+    login(user.email); // ✅ Pass email to AuthContext login
 
     setLoading(false);
     alert('Login successful!');

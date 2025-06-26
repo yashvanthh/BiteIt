@@ -7,20 +7,29 @@ export const AuthProvider = ({ children }) => {
     return localStorage.getItem('isLoggedIn') === 'true';
   });
 
-  const login = () => {
+  const [user, setUser] = useState(() => {
+    return localStorage.getItem('loggedInUser') || null;
+  });
+
+  const login = (username) => {
     setIsLoggedIn(true);
+    setUser(username);
     localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('loggedInUser', username);
   };
 
   const logout = () => {
     setIsLoggedIn(false);
+    setUser(null);
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('loggedInUser');
   };
 
   useEffect(() => {
     const handleStorage = (e) => {
       if (e.key === 'isLoggedIn') {
         setIsLoggedIn(e.newValue === 'true');
+        setUser(localStorage.getItem('loggedInUser') || null);
       }
     };
     window.addEventListener('storage', handleStorage);
@@ -28,7 +37,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
