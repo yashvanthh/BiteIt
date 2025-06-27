@@ -10,7 +10,10 @@ import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import Cart from './pages/Cart';
 import Services from './pages/Services';
-
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ManageOrders from './pages/admin/ManageOrders';
+import ManageProducts from './pages/admin/ManageProducts';
+import ManageUsers from './pages/admin/ManageUsers';
 
 const App = () => {
   const location = useLocation();
@@ -22,6 +25,10 @@ const App = () => {
       {showNavbar && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/products" element={<ManageProducts />} />
+        <Route path="/admin/orders" element={<ManageOrders />} />
+        <Route path="/admin/users" element={<ManageUsers />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
