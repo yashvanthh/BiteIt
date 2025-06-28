@@ -52,7 +52,7 @@ const AboutUs = () => {
           <div className="bg-[#0B0E1E] dark:bg-gray-800 text-white rounded-md flex flex-col md:flex-row overflow-hidden">
             <div className="w-full md:w-1/3 p-6 space-y-4 border-b md:border-b-0 md:border-r border-gray-700">
               <button className="bg-orange-500 text-white font-semibold px-4 py-2 rounded-full">
-                How does Cravy work?
+                Howdoes Bitelt work?
               </button>
               <p className="font-medium">What payment methods are accepted?</p>
               <p className="font-medium">Can I track my order in real-time?</p>
