@@ -7,8 +7,9 @@ export default function ManageUsers() {
     const sampleUsers = [
       { name: "Sachin", email: "admin@biteit.in", role: "admin" },
       { name: "Raj", email: "raj@gmail.com", role: "user" },
-      { name: "Priya", email: "priya@yahoo.com", role: "user" },
-    ];
+      {name: "Priya", email: "pri@gmail.com", role: "user"},
+      {name: "Thara", email: "thara@gmail.com", role: "user"},
+   ];
     setUsers(sampleUsers);
   }, []);
 

@@ -8,6 +8,7 @@ export default function ManageProducts() {
       { name: "Cheese Burger", price: 199, category: "Burger" },
       { name: "Paneer Pizza", price: 299, category: "Pizza" },
       { name: "Veg Momos", price: 149, category: "Snacks" },
+      { name: "chicken nooddles", price: 199, category: "nooddles" },
     ];
     setProducts(sampleProducts);
   }, []);
