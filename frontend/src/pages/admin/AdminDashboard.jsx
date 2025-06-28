@@ -15,12 +15,14 @@ export default function AdminDashboard() {
       { name: "Sachin", email: "admin@biteit.in", role: "admin" },
       { name: "Raj", email: "raj@gmail.com", role: "user" },
       { name: "Priya", email: "priya@yahoo.com", role: "user" },
+      {name: "Thara", email: "thara@gmail.com", role: "user"},
     ];
 
     const sampleProducts = [
       { name: "Cheese Burger", price: 199, category: "Burger" },
       { name: "Paneer Pizza", price: 299, category: "Pizza" },
       { name: "Veg Momos", price: 149, category: "Snacks" },
+      { name: "chicken nooddles", price: 149, category: "nooddles" },
     ];
 
     const sampleOrders = [
