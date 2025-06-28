@@ -80,7 +80,7 @@ const AboutUs = () => {
           </div>
 
           <p className="text-center text-gray-600 dark:text-gray-300 text-sm mt-4 max-w-4xl mx-auto">
-            Cravy simplifies the food ordering process. Browse through our diverse menu,
+          Bitelt simplifies the food ordering process. Browse through our diverse menu,
             select your favorite dishes, and proceed to checkout. Your delicious meal will
             be on its way to your doorstep in no time!
           </p>
