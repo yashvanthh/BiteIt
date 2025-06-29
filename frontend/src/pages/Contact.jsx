@@ -1,9 +1,10 @@
 import React from 'react';
 import ContactForm from '../components/ContactForm';
 
+
 const Contact = () => {
   return (
-    <div className="py-10 px-4 mt-20 lg:px-16 min-h-screen bg-white text-gray-800 dark:bg-gray-900 dark:text-white transition-colors duration-300">
+    <div className="py-10 px-4  lg:px-16 min-h-screen bg-white text-gray-800 dark:bg-gray-900 dark:text-white transition-colors duration-300">
       {/* Inner Container */}
       <div className="flex flex-col lg:flex-row justify-between gap-10 max-w-7xl mx-auto">
         {/* Left Text Content */}

@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useAuth } from './AuthContext';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
@@ -11,7 +11,7 @@ export const CartProvider = ({ children }) => {
 
   // ✅ Load cart from localStorage when user logs in
   useEffect(() => {
-    const email = localStorage.getItem('loggedInUser'); // was JSON.parse before (incorrect)
+    const email = localStorage.getItem("loggedInUser"); // was JSON.parse before (incorrect)
     if (email) {
       setUserEmail(email);
       const savedCart = localStorage.getItem(`cart_${email}`);
@@ -31,10 +31,10 @@ export const CartProvider = ({ children }) => {
 
   // ✅ Add item to cart (increment quantity if already exists)
   const addToCart = (item) => {
-    setCart(prev => {
-      const exists = prev.find(i => i.id === item.id);
+    setCart((prev) => {
+      const exists = prev.find((i) => i.id === item.id);
       if (exists) {
-        return prev.map(i =>
+        return prev.map((i) =>
           i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
         );
       }
@@ -47,7 +47,7 @@ export const CartProvider = ({ children }) => {
 
   // Optional: Remove item from cart
   const removeFromCart = (id) => {
-    setCart(prev => prev.filter(item => item.id !== id));
+    setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
   // Optional: Clear the cart
@@ -59,7 +59,16 @@ export const CartProvider = ({ children }) => {
   };
 
   return (
-    <CartContext.Provider value={{ cart, setCart, addToCart, removeFromCart, clearCart, cartItemCount }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        setCart,
+        addToCart,
+        removeFromCart,
+        clearCart,
+        cartItemCount,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

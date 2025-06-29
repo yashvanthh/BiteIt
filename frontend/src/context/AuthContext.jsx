@@ -1,43 +1,57 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
-  });
-
+  // Initialize user state from localStorage (try-catch for safety)
   const [user, setUser] = useState(() => {
-    return localStorage.getItem('loggedInUser') || null;
+    const stored = localStorage.getItem("user");
+    try {
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   });
 
-  const login = (username) => {
-    setIsLoggedIn(true);
-    setUser(username);
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('loggedInUser', username);
+  const isLoggedIn = !!user;
+  const isAdmin = user?.role === "admin";
+
+  const login = (userData) => {
+    // Normalize user object with role
+    const userObj = {
+      email: userData.email || "",
+      username: userData.username || "",
+      role: userData.role || "user", // default role = "user"
+    };
+    setUser(userObj);
+    localStorage.setItem("user", JSON.stringify(userObj));
+    localStorage.setItem("loggedInUser", userObj.email);
   };
 
   const logout = () => {
-    setIsLoggedIn(false);
     setUser(null);
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('loggedInUser');
+    localStorage.removeItem("user");
+    localStorage.removeItem("loggedInUser");
   };
 
+  // Sync user state across tabs/windows
   useEffect(() => {
     const handleStorage = (e) => {
-      if (e.key === 'isLoggedIn') {
-        setIsLoggedIn(e.newValue === 'true');
-        setUser(localStorage.getItem('loggedInUser') || null);
+      if (e.key === "user") {
+        try {
+          const newUser = JSON.parse(e.newValue);
+          setUser(newUser || null);
+        } catch {
+          setUser(null);
+        }
       }
     };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoggedIn, isAdmin, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,54 +1,100 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 
-export default function ManageUsers() {
+const ManageUsers = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+  const [selectedEmail, setSelectedEmail] = useState(null);
 
   useEffect(() => {
-    const sampleUsers = [
-      { name: "Sachin", email: "admin@biteit.in", role: "admin" },
-      { name: "Raj", email: "raj@gmail.com", role: "user" },
-      {name: "Priya", email: "pri@gmail.com", role: "user"},
-      {name: "Thara", email: "thara@gmail.com", role: "user"},
-   ];
-    setUsers(sampleUsers);
+    const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
+    setUsers(storedUsers);
   }, []);
 
-  return (
-    <div className="p-8 min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-black dark:to-gray-900">
-      <h1 className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-6">
-        Manage Users
-      </h1>
+  const confirmDelete = (email) => setSelectedEmail(email);
 
-      <div className="overflow-x-auto shadow rounded-lg">
-        <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-          <thead className="bg-orange-100 dark:bg-gray-700 text-left text-sm text-gray-700 dark:text-white uppercase">
-            <tr>
-              <th className="p-4">Name</th>
-              <th className="p-4">Email</th>
-              <th className="p-4">Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u, i) => (
-              <tr key={i} className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td className="p-4 text-gray-800 dark:text-white">{u.name}</td>
-                <td className="p-4 text-gray-800 dark:text-white">{u.email}</td>
-                <td className="p-4">
-                  <span
-                    className={`px-3 py-1 text-sm font-semibold rounded-full ${
-                      u.role === "admin"
-                        ? "bg-green-100 dark:bg-green-800 dark:text-white text-green-800"
-                        : "bg-blue-100 dark:bg-blue-800 dark:text-white text-blue-800"
-                    }`}
-                  >
-                    {u.role}
-                  </span>
-                </td>
+  const handleDelete = () => {
+    const filtered = users.filter((u) => u.email !== selectedEmail);
+    setUsers(filtered);
+    localStorage.setItem("users", JSON.stringify(filtered));
+    setSelectedEmail(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-8 dark:bg-gray-900">
+      <button
+        onClick={() => navigate("/admin/dashboard")}
+        className="mb-6 flex items-center gap-2 text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-4 py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+      >
+        <FaArrowLeft /> Back to Dashboard
+      </button>
+
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+        Manage Users
+      </h2>
+
+      {users.length === 0 ? (
+        <p className="text-gray-500 dark:text-gray-300">No users found.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white dark:bg-gray-800 shadow rounded-lg">
+            <thead>
+              <tr className="text-left bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                <th className="p-3">Email</th>
+                <th className="p-3">Username</th>
+                <th className="p-3">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.email} className="border-b dark:border-gray-700">
+                  <td className="p-3">{user.email}</td>
+                  <td className="p-3">{user.username}</td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => confirmDelete(user.email)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Modal */}
+      {selectedEmail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+              Confirm Delete
+            </h3>
+            <p className="mb-6 text-sm text-gray-600 dark:text-gray-300">
+              Are you sure you want to delete this user?
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setSelectedEmail(null)}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default ManageUsers;

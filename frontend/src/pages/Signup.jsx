@@ -1,113 +1,186 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const Signup = () => {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Read dark mode state from localStorage on mount
   useEffect(() => {
-    setDarkMode(localStorage.getItem('theme') === 'dark');
+    setDarkMode(localStorage.getItem("theme") === "dark");
   }, []);
+
+  const isValidEmail = (email) => email.includes("@") && email.endsWith(".com");
+
+  const isValidPassword = (password) =>
+    password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-
-    if (users.some(user => user.email === email)) {
-      setError('Email already registered.');
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email (must include @ and end with .com)");
       setLoading(false);
       return;
     }
 
-    users.push({ email, username, password });
-    localStorage.setItem('users', JSON.stringify(users));
+    if (!isValidPassword(password)) {
+      setError("Password must be at least 8 characters long and alphanumeric");
+      setLoading(false);
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    if (users.some((user) => user.email === email)) {
+      setError("Email already registered.");
+      setLoading(false);
+      return;
+    }
+
+    users.push({ email, username, password, isAdmin });
+    localStorage.setItem("users", JSON.stringify(users));
 
     setLoading(false);
-    alert('Account created successfully!');
-    navigate('/login');
+    setSuccessMessage("Account created successfully!");
+
+    setTimeout(() => {
+      setSuccessMessage("");
+      navigate("/login");
+    }, 2000);
   };
 
-  const baseInputClasses = "w-full border rounded p-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm";
-  const darkInputClasses = "bg-gray-700 border-gray-600 text-white";
-  const lightInputClasses = "bg-white border-gray-300 text-gray-900";
-
   return (
-    <div className={`min-h-screen flex items-center justify-center px-4 ${darkMode ? 'bg-gray-900' : 'bg-indigo-100'}`}>
-      <div className={`w-full max-w-md shadow-lg rounded-2xl p-8 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <h2 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+    <div
+      className={`min-h-screen flex items-center justify-center px-4 ${
+        darkMode ? "bg-gray-900" : "bg-indigo-100"
+      }`}
+    >
+      {successMessage && (
+        <div className="fixed top-5 z-50 bg-green-600 text-white px-6 py-3 rounded shadow-md">
+          {successMessage}
+        </div>
+      )}
+
+      <div
+        className={`w-full max-w-md p-8 rounded-2xl shadow-lg ${
+          darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+        }`}
+      >
+        <h2 className="text-2xl font-bold mb-4 text-center">
           Create your account
         </h2>
 
-        {error && (
-          <div className="mb-4 text-red-600 text-center" role="alert">
-            {error}
-          </div>
-        )}
+        {error && <div className="mb-4 text-red-600 text-center">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-4" aria-label="Signup form">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Email address</label>
+            <label htmlFor="email" className="block mb-1">
+              Email address
+            </label>
             <input
               id="email"
               type="email"
-              aria-label="Email address"
               required
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className={`${baseInputClasses} ${darkMode ? darkInputClasses : lightInputClasses}`}
+              className={`w-full p-2 rounded border text-sm ${
+                darkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-white border-gray-300 text-black"
+              } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
               disabled={loading}
             />
           </div>
+
           <div>
-            <label htmlFor="username" className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Username</label>
+            <label htmlFor="username" className="block mb-1">
+              Username
+            </label>
             <input
               id="username"
               type="text"
-              aria-label="Username"
               required
               value={username}
-              onChange={e => setUsername(e.target.value)}
+              onChange={(e) => setUsername(e.target.value)}
               placeholder="Your username"
-              className={`${baseInputClasses} ${darkMode ? darkInputClasses : lightInputClasses}`}
+              className={`w-full p-2 rounded border text-sm ${
+                darkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-white border-gray-300 text-black"
+              } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
               disabled={loading}
             />
           </div>
-          <div>
-            <label htmlFor="password" className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Password</label>
+
+          <div className="relative">
+            <label htmlFor="password" className="block mb-1">
+              Password
+            </label>
             <input
               id="password"
-              type="password"
-              aria-label="Password"
+              type={showPassword ? "text" : "password"}
               required
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Create a password"
-              className={`${baseInputClasses} ${darkMode ? darkInputClasses : lightInputClasses}`}
+              className={`w-full p-2 rounded border text-sm ${
+                darkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-white border-gray-300 text-black"
+              } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
               disabled={loading}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 bottom-2 text-gray-500 dark:text-gray-300"
+              tabIndex={-1}
+            >
+              {showPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
           </div>
+
+          <div className="flex items-center">
+            <input
+              id="admin"
+              type="checkbox"
+              checked={isAdmin}
+              onChange={(e) => setIsAdmin(e.target.checked)}
+              className="mr-2"
+              disabled={loading}
+            />
+            <label htmlFor="admin" className="text-sm">
+              Register as Admin
+            </label>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition disabled:opacity-50"
+            className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition disabled:opacity-50 flex items-center justify-center"
           >
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? (
+              <span className="h-5 w-5 border-2 border-white border-t-transparent animate-spin rounded-full" />
+            ) : (
+              "Create Account"
+            )}
           </button>
         </form>
 
-        <p className={`mt-6 text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Already have an account?{' '}
+        <p className="mt-6 text-center text-sm">
+          Already have an account?{" "}
           <Link to="/login" className="text-indigo-600 hover:underline">
             Sign in
           </Link>
