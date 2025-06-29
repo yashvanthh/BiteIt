@@ -83,9 +83,6 @@ src/
    npm run dev
    ```
 
-4. **Visit the app:** Open [http://localhost:5173](http://localhost:5173)
-
----
 
 ## 🦚 Admin Login Info (Hardcoded in localStorage)
 
@@ -109,12 +106,6 @@ localStorage.setItem("users", JSON.stringify(users));
 
 ---
 
-## 📸 Screenshots
-
-> *(You can add screenshots of: Home page, Menu, Cart, Admin Dashboard, etc.)*
-
----
-
 ## 📜 License
 
 This project is for learning/demo purposes. You are free to modify and use it in your portfolio.
@@ -123,7 +114,7 @@ This project is for learning/demo purposes. You are free to modify and use it in
 
 ## 👨‍💼 Author
 
-Developed with ❤️ by \[Your Name]
+Developed with ❤️ by Yashvanth M R
 
 ---
 
