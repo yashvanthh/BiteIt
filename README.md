@@ -67,7 +67,7 @@ src/
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/yourusername/bitelt.git
+   git clone https://github.com/yashvanthh/bitelt.git
    cd bitelt
    ```
 
