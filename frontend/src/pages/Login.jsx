@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,60 +20,49 @@ const Login = () => {
     setDarkMode(localStorage.getItem("theme") === "dark");
   }, []);
 
-  const isValidEmail = (email) => email.includes("@") && email.endsWith(".com");
-  const isValidPassword = (password) =>
-    password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password);
-
   const showToast = (msg, type = "error") => {
     setToast({ message: msg, type });
-    setTimeout(() => setToast({ message: "", type: "" }), 2000);
+    setTimeout(() => setToast({ message: "", type: "" }), 2500);
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    if (!email.includes("@") || !email.endsWith(".com")) {
+      showToast("Enter a valid email (must include @ and end with .com)");
+      return false;
+    }
+    if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      showToast("Password must be at least 8 characters and alphanumeric");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setLoading(true);
 
-    if (!isValidEmail(email)) {
-      showToast("Enter a valid email (must include @ and end with .com)");
-      setLoading(false);
-      return;
-    }
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-    if (!isValidPassword(password)) {
-      showToast("Password must be 8+ characters and alphanumeric");
-      setLoading(false);
-      return;
-    }
-
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find(
-      (u) => u.email === email && u.password === password
-    );
-
-    setTimeout(() => {
-      if (!user) {
-        showToast("Invalid email or password");
-        setLoading(false);
-        return;
-      }
-
-      // Explicitly assign role for admin email
-      const userRole =
-        user.email === "admin@gmail.com" ? "admin" : user.role || "user";
+      const role = user.email === "admin@gmail.com" ? "admin" : "user";
 
       login({
         email: user.email,
-        username: user.username,
-        role: userRole,
+        username: user.displayName || "User",
+        role,
       });
 
-      setLoading(false);
       showToast("Login successful!", "success");
 
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
-    }, 1000);
+      setTimeout(() => navigate("/"), 2000);
+    } catch (err) {
+      showToast("Invalid email or password");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -95,15 +86,11 @@ const Login = () => {
           darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
         }`}
       >
-        <h2 className="text-2xl font-bold mb-4 text-center">
-          Sign in to your account
-        </h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">Sign in to your account</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block mb-1">
-              Email address
-            </label>
+            <label htmlFor="email" className="block mb-1">Email address</label>
             <input
               id="email"
               type="email"
@@ -121,9 +108,7 @@ const Login = () => {
           </div>
 
           <div className="relative">
-            <label htmlFor="password" className="block mb-1">
-              Password
-            </label>
+            <label htmlFor="password" className="block mb-1">Password</label>
             <input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -161,10 +146,7 @@ const Login = () => {
           </button>
 
           <div className="text-right text-sm mt-1">
-            <Link
-              to="/forgot-password"
-              className="text-indigo-600 hover:underline"
-            >
+            <Link to="/forgot-password" className="text-indigo-600 hover:underline">
               Forgot password?
             </Link>
           </div>

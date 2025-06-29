@@ -1,12 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "../firebase"; // adjust if needed
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Initialize user state from localStorage (try-catch for safety)
   const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem("user");
     try {
+      const stored = localStorage.getItem("user");
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
@@ -17,26 +18,63 @@ export const AuthProvider = ({ children }) => {
   const isAdmin = user?.role === "admin";
 
   const login = (userData) => {
-    // Normalize user object with role
     const userObj = {
       email: userData.email || "",
       username: userData.username || "",
-      role: userData.role || "user", // default role = "user"
+      role: userData.role || "user",
     };
     setUser(userObj);
     localStorage.setItem("user", JSON.stringify(userObj));
     localStorage.setItem("loggedInUser", userObj.email);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await signOut(auth); // optional if using Firebase Auth
+    } catch (err) {
+      console.error("Firebase signOut error:", err.message);
+    }
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("loggedInUser");
   };
 
-  // Sync user state across tabs/windows
+  // Sync user state with Firebase auth status
   useEffect(() => {
-    const handleStorage = (e) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        const stored = localStorage.getItem("user");
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            setUser(parsed);
+          } catch {
+            setUser({
+              email: firebaseUser.email,
+              username: firebaseUser.displayName || "",
+              role: "user",
+            });
+          }
+        } else {
+          setUser({
+            email: firebaseUser.email,
+            username: firebaseUser.displayName || "",
+            role: "user",
+          });
+        }
+      } else {
+        setUser(null);
+        localStorage.removeItem("user");
+        localStorage.removeItem("loggedInUser");
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Sync across tabs
+  useEffect(() => {
+    const syncUser = (e) => {
       if (e.key === "user") {
         try {
           const newUser = JSON.parse(e.newValue);
@@ -46,8 +84,8 @@ export const AuthProvider = ({ children }) => {
         }
       }
     };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
   }, []);
 
   return (

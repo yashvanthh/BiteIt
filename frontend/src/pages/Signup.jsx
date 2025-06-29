@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { auth } from "../firebase";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { db } from "../firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -8,10 +12,8 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [toast, setToast] = useState({ message: "", type: "" });
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -20,44 +22,68 @@ const Signup = () => {
   }, []);
 
   const isValidEmail = (email) => email.includes("@") && email.endsWith(".com");
-
   const isValidPassword = (password) =>
     password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password);
 
-  const handleSubmit = (e) => {
+  const showToast = (msg, type = "error") => {
+    setToast({ message: msg, type });
+    setTimeout(() => setToast({ message: "", type: "" }), 2500);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     if (!isValidEmail(email)) {
-      setError("Please enter a valid email (must include @ and end with .com)");
+      showToast("Invalid email format");
+      setLoading(false);
+      return;
+    }
+
+    if (!username.trim()) {
+      showToast("Username is required");
       setLoading(false);
       return;
     }
 
     if (!isValidPassword(password)) {
-      setError("Password must be at least 8 characters long and alphanumeric");
+      showToast("Password must be 8+ characters and alphanumeric");
       setLoading(false);
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    if (users.some((user) => user.email === email)) {
-      setError("Email already registered.");
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      await updateProfile(userCredential.user, {
+        displayName: username,
+      });
+
+      // Save to Firestore
+      await addDoc(collection(db, "users"), {
+        email,
+        username,
+        createdAt: serverTimestamp(),
+      });
+
+      showToast("Account created successfully!", "success");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+    } catch (err) {
+      showToast(
+        err.message.includes("email-already-in-use")
+          ? "Email already in use"
+          : "Signup failed. Try again."
+      );
+    } finally {
       setLoading(false);
-      return;
     }
-
-    users.push({ email, username, password, isAdmin });
-    localStorage.setItem("users", JSON.stringify(users));
-
-    setLoading(false);
-    setSuccessMessage("Account created successfully!");
-
-    setTimeout(() => {
-      setSuccessMessage("");
-      navigate("/login");
-    }, 2000);
   };
 
   return (
@@ -66,9 +92,13 @@ const Signup = () => {
         darkMode ? "bg-gray-900" : "bg-indigo-100"
       }`}
     >
-      {successMessage && (
-        <div className="fixed top-5 z-50 bg-green-600 text-white px-6 py-3 rounded shadow-md">
-          {successMessage}
+      {toast.message && (
+        <div
+          className={`fixed top-6 z-50 px-6 py-2 rounded shadow-md transition-all duration-300 ${
+            toast.type === "success" ? "bg-green-600" : "bg-red-600"
+          } text-white`}
+        >
+          {toast.message}
         </div>
       )}
 
@@ -81,55 +111,37 @@ const Signup = () => {
           Create your account
         </h2>
 
-        {error && <div className="mb-4 text-red-600 text-center">{error}</div>}
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block mb-1">
-              Email address
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className={`w-full p-2 rounded border text-sm ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-black"
-              } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-              disabled={loading}
-            />
-          </div>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className={`w-full p-2 rounded border text-sm ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-black"
+            } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+            disabled={loading}
+          />
 
-          <div>
-            <label htmlFor="username" className="block mb-1">
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Your username"
-              className={`w-full p-2 rounded border text-sm ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-black"
-              } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-              disabled={loading}
-            />
-          </div>
+          <input
+            type="text"
+            required
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Your username"
+            className={`w-full p-2 rounded border text-sm ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-black"
+            } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+            disabled={loading}
+          />
 
           <div className="relative">
-            <label htmlFor="password" className="block mb-1">
-              Password
-            </label>
             <input
-              id="password"
               type={showPassword ? "text" : "password"}
               required
               value={password}
@@ -144,26 +156,12 @@ const Signup = () => {
             />
             <button
               type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
+              onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 bottom-2 text-gray-500 dark:text-gray-300"
               tabIndex={-1}
             >
               {showPassword ? <FiEyeOff /> : <FiEye />}
             </button>
-          </div>
-
-          <div className="flex items-center">
-            <input
-              id="admin"
-              type="checkbox"
-              checked={isAdmin}
-              onChange={(e) => setIsAdmin(e.target.checked)}
-              className="mr-2"
-              disabled={loading}
-            />
-            <label htmlFor="admin" className="text-sm">
-              Register as Admin
-            </label>
           </div>
 
           <button
@@ -179,7 +177,11 @@ const Signup = () => {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm">
+        <p
+          className={`mt-6 text-center text-sm ${
+            darkMode ? "text-gray-400" : "text-gray-600"
+          }`}
+        >
           Already have an account?{" "}
           <Link to="/login" className="text-indigo-600 hover:underline">
             Sign in

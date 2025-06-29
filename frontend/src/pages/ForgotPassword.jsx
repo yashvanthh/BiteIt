@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '../firebase'; // adjust the path if necessary
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState(''); // success or error message
+  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
@@ -11,22 +13,15 @@ const ForgotPassword = () => {
     setMessage('');
 
     try {
-      const res = await fetch('/api/forgot-password', { // replace with your API endpoint
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        setError(errData.message || 'Failed to send reset link');
-        return;
-      }
-
+      await sendPasswordResetEmail(auth, email);
       setMessage('If this email is registered, a reset link has been sent.');
       setEmail('');
-    } catch {
-      setError('Network error, please try again.');
+    } catch (err) {
+      if (err.code === 'auth/user-not-found') {
+        setMessage('If this email is registered, a reset link has been sent.'); // Don't expose user existence
+      } else {
+        setError(err.message || 'Failed to send reset link');
+      }
     }
   };
 
