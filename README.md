@@ -120,6 +120,6 @@ Developed with ❤️ by Yashvanth M R
 
 ## 🌐 Live Demo
 
-[🔗 Click Here to View Live](https://your-deployment-url.vercel.app)
+[🔗 Click Here to View Live](https://biteit-c0530.web.app)
 
 ---
